@@ -192,10 +192,13 @@ local AutoShow = AimingSettings.GUIAutoShow
 if (AutoShow == nil) then
     AutoShow = true
 end
+
 local Window = Library:CreateWindow({
-    Title = "epic hax",
+    Title = string.format("Aim-Blox [Blox Fruit] - version %s | updated: %s", metadata.version, metadata.updated),
+    AutoShow = true,
+    
     Center = true,
-    AutoShow = AutoShow
+    Size = UDim2.fromOffset(550, 627),
 })
 
 -- //
