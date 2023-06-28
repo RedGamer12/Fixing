@@ -105,7 +105,7 @@ local AimingSettings = {
         Colour = Color3fromRGB(231, 84, 128),
         DynamicFOVConstant = 25,
 
-        FollowSelected = false
+        FollowSelected = true
     },
 
     DeadzoneFOVSettings = {
