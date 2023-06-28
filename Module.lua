@@ -1223,7 +1223,7 @@ end)
 task.delay(1, function()
     -- // Credits (by disabling this and not including your own way of crediting within the script, e.g. credits tab, is violating the license agreement. Beware!)
     if (Aiming.ShowCredits) then
-        messagebox("Thanks to Stefanuk12 for their Aiming Module (v2, Module)", "Credits", 0)
+        print("Thanks to Stefanuk12 for their Aiming Module (v2, Module)", "Credits", 0)
     end
 end)
 
