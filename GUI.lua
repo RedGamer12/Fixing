@@ -1,8 +1,6 @@
 -- // Dependencies
 local LinoriaRepo = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
-
-local metadata = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/funky-friday-autoplay/main/metadata.lua"))()
-
+local metadata = loadstring(game:HttpGet("https://raw.githubusercontent.com/RedGamer12/Zero.-./main/metadata.lua"))()
 local Library = loadstring(game:HttpGet(LinoriaRepo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(LinoriaRepo .. "addons/ThemeManager.lua"))()
 
