@@ -1,8 +1,10 @@
 -- // Dependencies
 local LinoriaRepo = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
+
+local metadata = loadstring(game:HttpGet("https://raw.githubusercontent.com/wally-rblx/funky-friday-autoplay/main/metadata.lua"))()()
+
 local Library = loadstring(game:HttpGet(LinoriaRepo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(LinoriaRepo .. "addons/ThemeManager.lua"))()
-local SaveManager = loadstring(game:HttpGet(LinoriaRepo .. "addons/SaveManager.lua"))()
 
 local Aiming = getgenv().Aiming
 if (not Aiming) then
@@ -17,13 +19,181 @@ local AimingUtilities = Aiming.Utilities
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
 
--- // Initialising the UI
+-- // Initialising the Library
 local AutoShow = AimingSettings.GUIAutoShow
 if (AutoShow == nil) then
     AutoShow = true
 end
+
+local SaveManager = {} do
+    SaveManager.Ignore = {}
+    SaveManager.Parser = {
+        Toggle = {
+            Save = function(idx, object) 
+                return { type = 'Toggle', idx = idx, value = object.Value } 
+            end,
+            Load = function(idx, data)
+                if Toggles[idx] then 
+                    Toggles[idx]:SetValue(data.value)
+                end
+            end,
+        },
+        Slider = {
+            Save = function(idx, object)
+                return { type = 'Slider', idx = idx, value = tostring(object.Value) }
+            end,
+            Load = function(idx, data)
+                if Options[idx] then 
+                    Options[idx]:SetValue(data.value)
+                end
+            end,
+        },
+        Dropdown = {
+            Save = function(idx, object)
+                return { type = 'Dropdown', idx = idx, value = object.Value, mutli = object.Multi }
+            end,
+            Load = function(idx, data)
+                if Options[idx] then 
+                    Options[idx]:SetValue(data.value)
+                end
+            end,
+        },
+        ColorPicker = {
+            Save = function(idx, object)
+                return { type = 'ColorPicker', idx = idx, value = object.Value:ToHex() }
+            end,
+            Load = function(idx, data)
+                if Options[idx] then 
+                    Options[idx]:SetValueRGB(Color3.fromHex(data.value))
+                end
+            end,
+        },
+        KeyPicker = {
+            Save = function(idx, object)
+                return { type = 'KeyPicker', idx = idx, mode = object.Mode, key = object.Value }
+            end,
+            Load = function(idx, data)
+                if Options[idx] then 
+                    Options[idx]:SetValue({ data.key, data.mode })
+                end
+            end,
+        }
+    }
+
+    function SaveManager:Save(name)
+        local fullPath = 'PVP/configs/' .. name .. '.json'
+
+        local data = {
+            version = 2,
+            objects = {}
+        }
+
+        for idx, toggle in next, Toggles do
+            if self.Ignore[idx] then continue end
+            table.insert(data.objects, self.Parser[toggle.Type].Save(idx, toggle))
+        end
+
+        for idx, option in next, Options do
+            if not self.Parser[option.Type] then continue end
+            if self.Ignore[idx] then continue end
+
+            table.insert(data.objects, self.Parser[option.Type].Save(idx, option))
+        end 
+
+        local success, encoded = pcall(httpService.JSONEncode, httpService, data)
+        if not success then
+            return false, 'failed to encode data'
+        end
+
+        writefile(fullPath, encoded)
+        return true
+    end
+
+    function SaveManager:Load(name)
+        local file = 'PVP/configs/' .. name .. '.json'
+        if not isfile(file) then return false, 'invalid file' end
+
+        local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file))
+        if not success then return false, 'decode error' end
+        if decoded.version ~= 2 then return false, 'invalid version' end
+
+        for _, option in next, decoded.objects do
+            if self.Parser[option.type] then
+                self.Parser[option.type].Load(option.idx, option)
+            end
+        end
+
+        return true
+    end
+
+    function SaveManager.Refresh()
+        local list = listfiles('PVP/configs')
+
+        local out = {}
+        for i = 1, #list do
+            local file = list[i]
+            if file:sub(-5) == '.json' then
+                -- i hate this but it has to be done ...
+
+                local pos = file:find('.json', 1, true)
+                local start = pos
+
+                local char = file:sub(pos, pos)
+                while char ~= '/' and char ~= '\\' and char ~= '' do
+                    pos = pos - 1
+                    char = file:sub(pos, pos)
+                end
+
+                if char == '/' or char == '\\' then
+                    table.insert(out, file:sub(pos + 1, start - 1))
+                end
+            end
+        end
+        
+        Options.ConfigList.Values = out;
+        Options.ConfigList:SetValues()
+        Options.ConfigList:Display()
+
+        return out
+    end
+
+    function SaveManager:Delete(name)
+        local file = 'PVP/configs/' .. name .. '.json'
+        if not isfile(file) then return false, string.format('Config %q does not exist', name) end
+
+        local succ, err = pcall(delfile, file)
+        if not succ then
+            return false, string.format('error occured during file deletion: %s', err)
+        end
+
+        return true
+    end
+
+    function SaveManager:SetIgnoreIndexes(list)
+        for i = 1, #list do 
+            table.insert(self.Ignore, list[i])
+        end
+    end
+
+    function SaveManager.Check()
+        local list = listfiles('PVP/configs')
+
+        for _, file in next, list do
+            if isfolder(file) then continue end
+
+            local data = readfile(file)
+            local success, decoded = pcall(httpService.JSONDecode, httpService, data)
+
+            if success and type(decoded) == 'table' and decoded.version ~= 2 then
+                pcall(delfile, file)
+            end
+        end
+    end
+end
+
 local Window = Library:CreateWindow({
-    Title = "PVP [Blox Fruit]",
+    Title = string.format("PVP [Blox Fruit] - version %s | updated: %s', metadata.version, metadata.updated"),
+    
     Center = true,
     AutoShow = AutoShow
 })
@@ -503,7 +673,7 @@ do
 end
 
 -- //
-local UISettingsTab = Window:AddTab("UI Settings")
+local UISettingsTab = Window:AddTab("Library Settings")
 UISettingsTab:SetLayoutOrder(69420) -- // so it sticks to the end
 do
     local MenuGroup = UISettingsTab:AddLeftGroupbox("Menu Settings")
@@ -522,9 +692,7 @@ do
 end
 
 ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
 
-SaveManager:BuildConfigSection(UISettingsTab)
 ThemeManager:ApplyToTab(UISettingsTab)
 
 -- // Misc
@@ -532,9 +700,90 @@ Library:OnUnload(function()
     Library.Unloaded = true
 end)
 
-SaveManager:IgnoreThemeSettings()
+local Configs = UISettingsTab:AddRightGroupbox('Configs')
+local Credits = UISettingsTab:AddRightGroupbox('Credits')
+    local function addRichText(label)
+        label.TextLabel.RichText = true
+    end
 
-SaveManager:SetIgnoreIndexes({"MenuKeybind"})
+    addRichText(Credits:AddLabel('<font color="#3da5ff">wally</font> - script'))
+    addRichText(Credits:AddLabel('<font color="#de6cff">Sezei</font> - contributor'))
+    Credits:AddLabel('Inori - ui library')
+    Credits:AddLabel('Jan - old ui library')
+
+
+local Misc = UISettingsTab:AddRightGroupbox('Miscellaneous')
+    Misc:AddLabel(metadata.message or 'no message found!', true)
+
+    Misc:AddDivider()
+    Misc:AddButton('Unload script', function() pcall(shared._unload) end)
+    Misc:AddButton('Copy discord', function()
+        if pcall(setclipboard, "https://wally.cool/discord") then
+            Library:Notify('Successfully copied discord link to your clipboard!', 5)
+        end
+    end)
+
+    Misc:AddLabel('Menu toggle'):AddKeyPicker('MenuToggle', { Default = 'Delete', NoUI = true })
+
+    Library.ToggleKeybind = Options.MenuToggle
+
+if type(readfile) == 'function' and type(writefile) == 'function' and type(makefolder) == 'function' and type(isfolder) == 'function' then
+    makefolder('PVP')
+    makefolder('PVP\\configs')
+
+    Configs:AddDropdown('ConfigList', { Text = 'Config list', Values = {}, AllowNull = true })
+    Configs:AddInput('ConfigName',    { Text = 'Config name' })
+
+    Configs:AddDivider()
+
+    Configs:AddButton('Save config', function()
+        local name = Options.ConfigName.Value;
+        if name:gsub(' ', '') == '' then
+            return Library:Notify('Invalid config name.', 3)
+        end
+
+        local success, err = SaveManager:Save(name)
+        if not success then
+            return Library:Notify(tostring(err), 5)
+        end
+
+        Library:Notify(string.format('Saved config %q', name), 5)
+        task.defer(SaveManager.Refresh)
+    end)
+
+    Configs:AddButton('Load', function()
+        local name = Options.ConfigList.Value
+        local success, err = SaveManager:Load(name)
+        if not success then
+            return Library:Notify(tostring(err), 5)
+        end
+
+        Library:Notify(string.format('Loaded config %q', name), 5)
+    end):AddButton('Delete', function()
+        local name = Options.ConfigList.Value
+        if name:gsub(' ', '') == '' then
+            return Library:Notify('Invalid config name.', 3)
+        end
+
+        local success, err = SaveManager:Delete(name)
+        if not success then
+            return Library:Notify(tostring(err), 5)
+        end
+
+        Library:Notify(string.format('Deleted config %q', name), 5)
+
+        task.spawn(Options.ConfigList.SetValue, Options.ConfigList, nil)
+        task.defer(SaveManager.Refresh)
+    end)
+
+    Configs:AddButton('Refresh list', SaveManager.Refresh)
+
+    task.defer(SaveManager.Refresh)
+    task.defer(SaveManager.Check)
+else
+    Configs:AddLabel('Your exploit is missing file functions so you are unable to use configs.', true)
+    --Library:Notify('Failed to create configs tab due to your exploit missing certain file functions.', 2)
+end
 
 -- // Return
 Aiming.GUI = {Library, AimingTab, Window, UISettingsTab, ThemeManager, SaveManager}
