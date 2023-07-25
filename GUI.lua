@@ -17,6 +17,7 @@ local AimingUtilities = Aiming.Utilities
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
 
+local httpService = game:GetService("HttpService")
 -- // Initialising the Library
 local AutoShow = AimingSettings.GUIAutoShow
 if (AutoShow == nil) then
