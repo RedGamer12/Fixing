@@ -92,7 +92,7 @@ local AimingSettings = {
         InternalEnabled = false, -- // Do not modify, for internal use only
         LockedPlayer = nil, -- // Do not modify, for internal use only
 
-        UnlockBind = "X"--Enum.KeyCode.X
+        UnlockBind = Enum.KeyCode.X
     },
 
     FOVSettings = {
