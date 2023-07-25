@@ -23,7 +23,7 @@ if (AutoShow == nil) then
     AutoShow = true
 end
 local Window = Library:CreateWindow({
-    Title = "AimBlox [Blox Fruit]",
+    Title = "PVP [Blox Fruit]",
     Center = true,
     AutoShow = AutoShow
 })
