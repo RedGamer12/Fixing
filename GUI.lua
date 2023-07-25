@@ -1,5 +1,5 @@
 -- // Dependencies
-local LinoriaRepo = "https://raw.githubusercontent.com/Stefanuk12/LinoriaLib/main/"
+local LinoriaRepo = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
 local Library = loadstring(game:HttpGet(LinoriaRepo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(LinoriaRepo .. "addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet(LinoriaRepo .. "addons/SaveManager.lua"))()
