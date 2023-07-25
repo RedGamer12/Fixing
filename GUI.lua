@@ -192,7 +192,7 @@ local SaveManager = {} do
 end
 
 local Window = Library:CreateWindow({
-    Title = string.format("PVP [Blox Fruit] - version %s | updated: %s', metadata.version, metadata.updated"),
+    Title = string.format('PVP / Blox Fruit - version %s | updated: %s', metadata.version, metadata.updated),
     
     Center = true,
     AutoShow = AutoShow
