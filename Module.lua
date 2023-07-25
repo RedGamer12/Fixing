@@ -71,7 +71,7 @@ local AimingSettings = {
     InternalEnabled = false, -- // Do not modify, for internal use only
     GUIAutoShow = true,
 
-    VisibleCheck = true,
+    VisibleCheck = false,
     TeamCheck = true,
     PlayerCheck = true,
     FriendCheck = true,
@@ -81,7 +81,7 @@ local AimingSettings = {
     IgnoredCheck = true,
 
     HitChance = 100,
-    TargetPart = {"All"},
+    TargetPart = {"UpperTorso", "LowerTorso"},
     RaycastIgnore = nil,
     Offset = Vector2new(),
     MaxDistance = 3000,
@@ -92,7 +92,7 @@ local AimingSettings = {
         InternalEnabled = false, -- // Do not modify, for internal use only
         LockedPlayer = nil, -- // Do not modify, for internal use only
 
-        UnlockBind = Enum.KeyCode.X
+        UnlockBind = "X"--Enum.KeyCode.X
     },
 
     FOVSettings = {
@@ -100,19 +100,19 @@ local AimingSettings = {
         Enabled = true,
         Visible = true,
         Type = "Static",
-        Scale = 80,
+        Scale = 90,
         Sides = 12,
         Colour = Color3fromRGB(231, 84, 128),
         DynamicFOVConstant = 25,
 
-        FollowSelected = true
+        FollowSelected = false
     },
 
     DeadzoneFOVSettings = {
         Circle = Drawingnew("Circle"),
         Enabled = false,
         Visible = true,
-        Scale = 10,
+        Scale = 15,
         Sides = 30,
         Colour = Color3fromRGB(83, 31, 46),
     },
@@ -1223,7 +1223,7 @@ end)
 task.delay(1, function()
     -- // Credits (by disabling this and not including your own way of crediting within the script, e.g. credits tab, is violating the license agreement. Beware!)
     if (Aiming.ShowCredits) then
-        print("Thanks to Stefanuk12 for their Aiming Module (v2, Module)", "Credits", 0)
+        print("Thanks to Stefanuk12 for their Aiming Module (v2, Module)")
     end
 end)
 
