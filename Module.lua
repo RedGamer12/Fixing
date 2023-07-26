@@ -1198,18 +1198,20 @@ end
     Aiming.Loaded = true
 end)]]
 
-while true do
-    local deltaTime = task.wait()
-
-    Aiming.UpdateFOV()
-    Aiming.UpdateDeadzoneFOV()
-    Aiming.UpdateTracer()
-    Aiming.GetClosestToCursor(deltaTime)
-
-    Aiming.Loaded = true
+task.spawn(function()
+    while true do
+        local deltaTime = task.wait()
     
-    task.wait()
-end
+        Aiming.UpdateFOV()
+        Aiming.UpdateDeadzoneFOV()
+        Aiming.UpdateTracer()
+        Aiming.GetClosestToCursor(deltaTime)
+    
+        Aiming.Loaded = true
+        
+        task.wait()
+    end
+end)
 
 -- //
 KeybindHandler.CreateBind({
