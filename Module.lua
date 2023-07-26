@@ -1189,14 +1189,27 @@ do
 end
 
 -- // Heartbeat Function
-Heartbeat:Connect(function(deltaTime)
+--[[Heartbeat:Connect(function(deltaTime)
     Aiming.UpdateFOV()
     Aiming.UpdateDeadzoneFOV()
     Aiming.UpdateTracer()
     Aiming.GetClosestToCursor(deltaTime)
 
     Aiming.Loaded = true
-end)
+end)]]
+
+while true do
+    local deltaTime = task.wait()
+
+    Aiming.UpdateFOV()
+    Aiming.UpdateDeadzoneFOV()
+    Aiming.UpdateTracer()
+    Aiming.GetClosestToCursor(deltaTime)
+
+    Aiming.Loaded = true
+    
+    task.wait()
+end
 
 -- //
 KeybindHandler.CreateBind({
