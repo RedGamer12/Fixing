@@ -1189,16 +1189,16 @@ do
 end
 
 -- // Heartbeat Function
---[[Heartbeat:Connect(function(deltaTime)
+Heartbeat:Connect(function(deltaTime)
     Aiming.UpdateFOV()
     Aiming.UpdateDeadzoneFOV()
     Aiming.UpdateTracer()
     Aiming.GetClosestToCursor(deltaTime)
 
     Aiming.Loaded = true
-end)]]
+end)
 
-task.spawn(function()
+--[[task.spawn(function()
     while true do
         local deltaTime = task.wait()
     
@@ -1211,7 +1211,7 @@ task.spawn(function()
         
         task.wait()
     end
-end)
+end)]]
 
 -- //
 KeybindHandler.CreateBind({
