@@ -1069,6 +1069,8 @@ function Aiming.GetClosestToCursor(deltaTime)
             continue
         end
 
+        if Player == LocalPlayer then continue end
+
         -- // Checks, seperate for ultimate efficiency
         if (AimingSettings.ForcefieldCheck and not Checks.Forcefield(Character, Player)) then
             continue
