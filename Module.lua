@@ -199,15 +199,8 @@ for _, Player in ipairs(Players:GetPlayers()) do
     end
 end
 
-for _, Player in ipairs(Players:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        AimingSettings.Target(Player)
-    end
-end
-
 -- // See when a new player joins
 Players.PlayerAdded:Connect(function(Player)
-    AimingSettings.Target(Player)
     -- // If friends, add to table
     if (LocalPlayer:IsFriendsWith(Player.UserId)) then
         table.insert(Friends, Player)
@@ -1305,6 +1298,7 @@ task.spawn(function()
         Aiming.UpdateTracer()
         Aiming.GetClosestToCursor(deltaTime)
 
+        Aiming.UpdateArrow()
         Aiming.Loaded = true
         
         task.wait()
