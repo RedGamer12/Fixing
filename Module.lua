@@ -129,7 +129,6 @@ local AimingSettings = {
 
     ArrowSettings = {
         Image = Instancenew("ImageLabel", Folder),
-        URL = "http://www.roblox.com/asset/?id=6954524255",
         Enabled = true,
         Type = "Static",
         Size = UDim2.new(0, 18, 0, 21),
@@ -181,7 +180,7 @@ function AimingSettings.Target(Player)
     ImageLabel.Name = "ImageLabel"
     ImageLabel.ImageColor3 = Settings.Colour
     ImageLabel.BackgroundTransparency = 1
-    ImageLabel.Image = AimingSettings.URL
+    ImageLabel.Image = "http://www.roblox.com/asset/?id=6954524255"
 
     Targets[Player.Name] = {
         Player = Player,
