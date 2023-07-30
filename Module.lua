@@ -126,15 +126,6 @@ local AimingSettings = {
         Colour = Color3fromRGB(231, 84, 128)
     },
 
-    ArrowSettings = {
-        Image = Instancenew("ImageLabel", Folder),
-        Enabled = true,
-        FieldOfView = 500,
-        Type = "Static",
-        Size = UDim2.new(0, 18, 0, 21),
-        Colour = Color3fromRGB(231, 84, 128)
-    },
-
     Ignored = {
         WhitelistMode = {
             Players = false,
