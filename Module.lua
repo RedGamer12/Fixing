@@ -46,7 +46,6 @@ local Folder = Instance.new("Folder", ScreenGui)
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local FieldOfView = 500
 
 -- // Optimisation Vars (ugly)
 local Drawingnew = Drawing.new
@@ -130,6 +129,7 @@ local AimingSettings = {
     ArrowSettings = {
         Image = Instancenew("ImageLabel", Folder),
         Enabled = true,
+        FieldOfView = 500,
         Type = "Static",
         Size = UDim2.new(0, 18, 0, 21),
         Colour = Color3fromRGB(231, 84, 128)
@@ -286,8 +286,8 @@ function Aiming.UpdateArrow()
                         local Center = (ScreenGui.AbsoluteSize / 2)
                         local Direction = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - Center).Unit
                         local Radian = math.atan2(Direction.X, Direction.Y)
-                        local Angle = (((math.pi * 2) / FieldOfView) * Radian)
-                        local ClampedPosition = (Center + (Direction * math.min(math.abs(((Center.Y - FieldOfView) / math.sin(Angle)) * FieldOfView), math.abs((Center.X - FieldOfView) / (math.cos(Angle)) / 2))))
+                        local Angle = (((math.pi * 2) / Settings.FieldOfView) * Radian)
+                        local ClampedPosition = (Center + (Direction * math.min(math.abs(((Center.Y - Settings.FieldOfView) / math.sin(Angle)) * Settings.FieldOfView), math.abs((Center.X - Settings.FieldOfView) / (math.cos(Angle)) / 2))))
 
                         Indicator.Position = UDim2.new(0, (ClampedPosition.X - (Indicator.Size.X.Offset / 2)), 0, ((ClampedPosition.Y - (Indicator.Size.Y.Offset / 2) - 15)))
                         Indicator.Rotation = (-math.deg(Radian) + 180)
@@ -320,7 +320,7 @@ function Aiming.UpdateArrow()
                     Indicator.Visible = false
                 end
             else
-                Indicator:Destroy()
+                Indicator.Visible = false
             end
 
             return Indicator
