@@ -76,7 +76,7 @@ local AimingSettings = {
     GUIAutoShow = true,
 
     VisibleCheck = false,
-    TeamCheck = true,
+    TeamCheck = false,
     PlayerCheck = true,
     FriendCheck = true,
     ForcefieldCheck = true,
@@ -1300,12 +1300,10 @@ end
 task.spawn(function()
     while true do
         local deltaTime = task.wait()
-    
         Aiming.UpdateFOV()
         Aiming.UpdateDeadzoneFOV()
         Aiming.UpdateTracer()
         Aiming.GetClosestToCursor(deltaTime)
-        Aiming.UpdateArrow()
 
         Aiming.Loaded = true
         
