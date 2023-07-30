@@ -37,12 +37,16 @@ local SignalManager, BeizerManager, KeybindHandler = FastLoadDependencies(
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+local CoreGui = game:GetService("CoreGui")
 -- // Vars
-local Heartbeat = RunService.Heartbeat
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+local Folder = Instance.new("Folder", ScreenGui)
+
 local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local FieldOfView = 500
 
 -- // Optimisation Vars (ugly)
 local Drawingnew = Drawing.new
@@ -123,6 +127,15 @@ local AimingSettings = {
         Colour = Color3fromRGB(231, 84, 128)
     },
 
+    ArrowSettings = {
+        Image = Instancenew("ImageLabel", Folder),
+        URL = "http://www.roblox.com/asset/?id=6954524255",
+        Enabled = true,
+        Type = "Static",
+        Size = UDim2.new(0, 18, 0, 21),
+        Colour = Color3fromRGB(231, 84, 128)
+    },
+
     Ignored = {
         WhitelistMode = {
             Players = false,
@@ -160,6 +173,22 @@ function AimingSettings.RaycastIgnore()
     return {Aiming.Utilities.Character(LocalPlayer), Aiming.Utilities.GetCurrentCamera()}
 end
 
+local Targets = {}
+function AimingSettings.Target(Player)
+    local Settings = AimingSettings.ArrowSettings
+
+    local ImageLabel = Settings.Image
+    ImageLabel.Name = "ImageLabel"
+    ImageLabel.ImageColor3 = Settings.Colour
+    ImageLabel.BackgroundTransparency = 1
+    ImageLabel.Image = AimingSettings.URL
+
+    Targets[Player.Name] = {
+        Player = Player,
+        Indicator = ImageLabel
+    }
+end
+
 -- // Keep track of current friends
 local Friends = {}
 
@@ -171,8 +200,15 @@ for _, Player in ipairs(Players:GetPlayers()) do
     end
 end
 
+for _, Player in ipairs(Players:GetPlayers()) do
+    if Player ~= LocalPlayer then
+        AimingSettings.Target(Player)
+    end
+end
+
 -- // See when a new player joins
 Players.PlayerAdded:Connect(function(Player)
+    AimingSettings.Target(Player)
     -- // If friends, add to table
     if (LocalPlayer:IsFriendsWith(Player.UserId)) then
         table.insert(Friends, Player)
@@ -218,6 +254,78 @@ do
 
     for _, SignalName in pairs(SignalNames) do
         Aiming.Signals:Create(SignalName)
+    end
+end
+
+function Aiming.UpdateArrow()
+    for Name, Target in next, Targets do
+        if Target.Indicator then
+            local Indicator = Target.Indicator
+            local Settings = AimingSettings.ArrowSettings
+            local IsValid = Aiming.Checks.IsAvailable()
+
+            if Players:FindFirstChild(Name) then
+                Target = Target.Player
+
+                if LocalPlayer.Character and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+                    
+                    local Character = Target.Character
+                    local WorldPosition = Character.HumanoidRootPart.Position
+                    local CameraVector = Camera.CFrame.Position
+                    local LookVector = Camera.CFrame.LookVector
+                    local ProjectVector = (WorldPosition - CameraVector)
+                    local Dot = LookVector:Dot(ProjectVector)
+
+                    if Dot <= 0 then
+                        WorldPosition = (CameraVector + (ProjectVector - ((LookVector * Dot) * 1.01)))
+                    end
+
+                    local ScreenPosition, Visible = Camera:WorldToScreenPoint(WorldPosition)
+                    local RayCast = workspace:FindPartOnRay(Ray.new(CameraVector, ((WorldPosition - CameraVector).Unit * 500)), LocalPlayer.Character, false, false)
+
+                    if (Visible and RayCast and not RayCast:IsDescendantOf(Character)) or not Visible then
+                        local Center = (ScreenGui.AbsoluteSize / 2)
+                        local Direction = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - Center).Unit
+                        local Radian = math.atan2(Direction.X, Direction.Y)
+                        local Angle = (((math.pi * 2) / FieldOfView) * Radian)
+                        local ClampedPosition = (Center + (Direction * math.min(math.abs(((Center.Y - FieldOfView) / math.sin(Angle)) * FieldOfView), math.abs((Center.X - FieldOfView) / (math.cos(Angle)) / 2))))
+
+                        Indicator.Position = UDim2.new(0, (ClampedPosition.X - (Indicator.Size.X.Offset / 2)), 0, ((ClampedPosition.Y - (Indicator.Size.Y.Offset / 2) - 15)))
+                        Indicator.Rotation = (-math.deg(Radian) + 180)
+
+                        if (Settings.Type == "Dynamic") then
+                            local Magnitude = ((1 / (LocalPlayer.Character.HumanoidRootPart.Position - WorldPosition).Magnitude) * 1000)
+
+                            if Magnitude > 18 then
+                                Magnitude = 18
+                            elseif Magnitude < 11 then
+                                Magnitude = 11
+                            end
+
+                            Indicator.Size = UDim2.new(0, Magnitude, 0, (Magnitude + 3))
+                        else
+                            Indicator.Size = Settings.Size
+                        end
+
+                        Indicator.Visible = true
+                    else
+                        Indicator.Visible = false
+                    end
+                else
+                    Indicator.Visible = false
+                end
+
+                if (IsValid) then
+                    Indicator.Visible = Settings.Enabled
+                else
+                    Indicator.Visible = false
+                end
+            else
+                Indicator:Destroy()
+            end
+
+            return Indicator
+        end
     end
 end
 
@@ -1190,16 +1298,6 @@ do
     ManagerB:Start()
 end
 
--- // Heartbeat Function
---[[Heartbeat:Connect(function(deltaTime)
-    Aiming.UpdateFOV()
-    Aiming.UpdateDeadzoneFOV()
-    Aiming.UpdateTracer()
-    Aiming.GetClosestToCursor(deltaTime)
-
-    Aiming.Loaded = true
-end)]]
-
 task.spawn(function()
     while true do
         local deltaTime = task.wait()
@@ -1208,7 +1306,8 @@ task.spawn(function()
         Aiming.UpdateDeadzoneFOV()
         Aiming.UpdateTracer()
         Aiming.GetClosestToCursor(deltaTime)
-    
+        Aiming.UpdateArrow()
+
         Aiming.Loaded = true
         
         task.wait()
